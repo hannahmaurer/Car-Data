@@ -135,25 +135,73 @@ ui <- fluidPage(
   
   # Application title
   titlePanel("Speed Analysis"),
+  tabsetPanel(
+    tabPanel("Sandbox", 
+             fluidPage(
+               titlePanel("The Data Sandbox"), 
+               mainPanel(
+                fluidRow(
+                  column(2,
+                      selectInput("X", "Choose X", column_names, column_names[1]),
+                      selectInput("Y", "Choose Y", column_names, column_names[3]),
+                      selectInput("Splitby", "Split By", column_names, column_names[3])),
+                  column(4, plotOutput("plot_01")),
+                  column(6, DT::dataTableOutput("table_01", width = "100%"))
+                ),
+               )
+             )
+    ),
+    tabPanel("Important Findings", 
+             fluidPage(
+               titlePanel("Important Findings"), 
+               mainPanel(
+                 h3("Results:"),
+                 verbatimTextOutput("min"),
+                 verbatimTextOutput("max"),
+                 verbatimTextOutput("median"),
+                 verbatimTextOutput("mean"),
+                 plotOutput("histogram")
+               )
+             )
+    ),
+    tabPanel("Essay", 
+             fluidPage(
+               titlePanel("Essay"), 
+               mainPanel(
+                 p("This paper is also available in Google Doc format: "),
+                 p("https://docs.google.com/document/d/15i1i3AIdO7DNEd4U7Oc_HgTqgV2t2j6VjaFmQWMsqlQ/edit?usp=sharing"),
+                 h4("Introduction"),
+                 p("Risk Management for road accidents is important 
+                      and placing a speed regulation is the easiest way to control drivers. 
+                      However, these regulations should be placed with careful 
+                      consideration putting to mind factors such as road conditions, 
+                      traffic patterns, and the surrounding environment. 
+                      Previous research conducted in South Carolina has found 
+                      that speed radar signs have shown that they may decrease 
+                      speeds in the range between 3 to 10 miles per hour (Sorrell et al). 
+                      We did this analysis to see if drivers followed these regulations for their safety. 
+                      We recorded data on cars near 30th St and 24th Avenue in Rock Island IL. 
+                      Collecting variables such as speed, flashing orange light, state plate, 
+                      weather, time, and date in addition to the cars passing the speed limit. 
+                      We conducted this study to evaluate safety issues and identify drivers 
+                      responses to acknowledging their speed in a speed limited zone."),
+                 h4("Method"),
+                 p("At the point of collection, we used Google Sheets to record our data. We each had a sheet to record our data and names. We sat in front of the sign, in our cars, at different times throughout the week and recorded the first 50 cars that passed by. We recorded the date, time, speed, if the orange light went off, the state-issued car plate going by the state’s initials, the weather, and then the temperature outside. Afterward, we gathered all of our data into one CSV file for easy access and uploaded it to GitHub so that it could be downloaded at any time. We then assign values to each of the columns, to ensure that they have been inputted correctly and so R will format them correctly. Finally, we cleaned the data. In some of our data for license plates, there was IO instead of IA, so we ran a simple replace function to find IO and replace it with IA. Then the weather wasn’t always capitalized, so we used a custom capitalize words function to uppercase the first letter. And finally, we formatted the time to just show the hours, minutes, and seconds. 
+Once all of the data has been cleaned, we created a server and ui function to calculate the minimum, maximum, median, and mean that the inputted data has. The shiny app generated the mean median mode and average for us.  Additionally, we utilized dropdown menus to allow users to choose the variables they want to analyze. The app generates our plots and table based on the selected variable by the user.  We used the calculate_stats function which helped calculate a summary stats for our datasets while the renderPlot and renderTAble functions generated plots and tables based on the input of the user. This allows users to understand and analyze the data easily. There is also a histogram to show the distribution of the data (to help determine if it’s normal or skewed). "),
+                 h4("Results"),
+                 p("The speed limit on the road was 35, with the lowest speed recorded being 12 mph and the fastest being 50. The median and mean are both 33, below the speed limit. The tendency for most drivers to operate slightly under the speed limit can contribute positively to overall road safety. This cautious approach allows for better reaction times, reduces the likelihood of accidents, and fosters a smoother flow of traffic, enhancing the safety of all road users. We hope while putting together the collected data from our class, the days are different.  This is important to us as if we have a lot of similar day and time data collection, we will just end up with duplicates. Other than that we can make a good analysis to figure out the trends with our variables."),
+                 h4("Citations"),
+                 p("Speed study data collection. Speed Study Data Collection | FHWA. (n.d.). https://highways.dot.gov/safety/speed-management/methods-and-practices-setting-speed-limits-informational-report/speed-study 
+Sorrell, Mark, et al. Use of Radar Equipped Portable Changeable Message Sign to Reduce Vehicle Speed in South Carolina Work Zones. 2006.")
+               )
+             )
+    )
+  )
   
-  fluidRow(
-    column(2,
-           selectInput("X", "Choose X", column_names, column_names[1]),
-           selectInput("Y", "Choose Y", column_names, column_names[3]),
-           selectInput("Splitby", "Split By", column_names, column_names[3])),
-    column(4, plotOutput("plot_01")),
-    column(6, DT::dataTableOutput("table_01", width = "100%"))
-  ),
+
   
   # Output: Results displayed in main panel
-  mainPanel(
-    h3("Results:"),
-    verbatimTextOutput("min"),
-    verbatimTextOutput("max"),
-    verbatimTextOutput("median"),
-    verbatimTextOutput("mean"),
-    plotOutput("histogram")
-  )
+
 )
 
 # Define server logic
@@ -184,7 +232,7 @@ server <- function(input, output) {
     hist(speeds, main = "Distribution of Speeds", xlab = "Speed", ylab = "Frequency", col = "skyblue")
   })
   output$table_01 <- DT::renderDataTable(df[, c(input$X, input$Y, input$Splitby)], 
-                                         options = list(pageLength = 4))
+                                         options = list(pageLength = 25))
 }
 
 # Run the application
